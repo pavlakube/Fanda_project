@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload PDF and Save JSON</title>
+</head>
+<body>
+    <h1>Upload PDF and Save JSON</h1>
+    <input type="file" id="fileInput" accept=".pdf">
+    <button id="uploadButton">Upload</button>
+    <button id="saveButton">Save</button>
+    <div id="response"></div>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const saveButton = document.getElementById('saveButton');
+        const responseDiv = document.getElementById('response');
+    
+        uploadButton.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+    
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseDiv.innerHTML = JSON.stringify(data, null, 2);
+                saveButton.disabled = false;
+            })
+            .catch(error => console.error(error));
+        });
+    
+        saveButton.addEventListener('click', () => {
+            const json = JSON.parse(responseDiv.innerText);
+            const saveAs = 'uploads/' + file.filename.replace(/^.*[\\\/]/, '') + '.json';
+            const blob = new Blob([JSON.stringify(json, null, 2)], {type: 'application/json'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', saveAs);
+            link.click();
+        });
+    </script>
+</body>
+</html>
